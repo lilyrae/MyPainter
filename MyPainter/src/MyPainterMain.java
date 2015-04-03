@@ -268,11 +268,11 @@ class PanelPaint extends JPanel{
 	ArrayList<Integer> a_i_pen = new ArrayList<Integer>();
 	
 	ArrayList<Point> a_p_rubber = new ArrayList<Point>();
-	ArrayList<Color> a_c_rubber = new ArrayList<Color>();
 	ArrayList<Integer> a_i_rubber = new ArrayList<Integer>();
 	
 	ArrayList<Point> Line_p1 = new ArrayList<Point>();
 	ArrayList<Point> Line_p2 = new ArrayList<Point>();
+	ArrayList<Color> Line_c = new ArrayList<Color>();
 	
 	
 	boolean is_clicked = false;
@@ -281,7 +281,6 @@ class PanelPaint extends JPanel{
 	int initialY;
 	int tempX;
 	int tempY;
-	int id_click_line = 0;
 	
 	public PanelPaint(){
 		setBorder(BorderFactory.createLineBorder(Color.black));
@@ -292,12 +291,20 @@ class PanelPaint extends JPanel{
             public void mouseDragged(MouseEvent event) {
             	
             	if(MyPainterMain.tool.equals("Draw")){
-	            	if(is_clicked)	
-	            	{
+	            	if(is_clicked){
 	            		repaint();
 	            		a_p.add(new Point(event.getX(), event.getY()));
 	            		a_c.add(MyPainterMain.g_color);
 	            		a_i.add(id_click);
+	            		repaint();
+	            	}
+
+            	}
+            	
+            	if(MyPainterMain.tool.equals("Line")){
+	            	if(is_clicked){
+	            		repaint();
+	            		Line_p2.set(Line_p2.size()-1, new Point(event.getX(), event.getY()));
 	            		repaint();
 	            	}
 
@@ -320,7 +327,6 @@ class PanelPaint extends JPanel{
 	            	{
 	            		repaint();
 	            		a_p_rubber.add(new Point(event.getX(), event.getY()));
-	            		a_c_rubber.add(Color.white);
 	            		a_i_rubber.add(id_click);
 	            		repaint();
 	            	}
@@ -349,16 +355,10 @@ class PanelPaint extends JPanel{
         	id_click++;
         	
         	if(MyPainterMain.tool.equals("Line")){
-        		
-        		if(id_click_line%2 == 0){
-        			Line_p1.add(new Point(event.getX(), event.getY()));
-        		}
-        		
-        		if(id_click_line%2 == 1){
-        			Line_p2.add(new Point(event.getX(), event.getY()));
-        		}
-        		
-        		id_click_line ++;
+        			
+        		Line_p1.add(new Point(event.getX(), event.getY()));
+        		Line_p2.add(new Point(event.getX(), event.getY()));
+        		Line_c.add(MyPainterMain.g_color);
 	        	
         	}
         	
@@ -381,7 +381,6 @@ class PanelPaint extends JPanel{
         	if(MyPainterMain.tool.equals("Rubber")){
         		
 	        	a_p_rubber.add(new Point(event.getX(), event.getY()));
-	    		a_c_rubber.add(MyPainterMain.g_color);
 	    		a_i_rubber.add(id_click);
 	    		repaint();
         	}
@@ -389,6 +388,9 @@ class PanelPaint extends JPanel{
         }
         public void mouseReleased(MouseEvent event) {
         	is_clicked = false;
+        	
+        	if(MyPainterMain.tool.equals("Line"))
+        		Line_p2.set(Line_p2.size()-1, new Point(event.getX(), event.getY()));
         }
 		@Override
 		public void mouseClicked(MouseEvent event) {
@@ -427,12 +429,11 @@ class PanelPaint extends JPanel{
         }
         
 		// Paint function for LINE
-       if(id_click_line>1){
-    	   for(int i = 0; i < Line_p1.size(); i++)
-    	   g.drawLine(Line_p1.get(i).x, Line_p1.get(i).y, Line_p2.get(i).x, Line_p2.get(i).y);
-    	   repaint();
-           
-       }
+    	for(int i = 0; i < Line_p2.size(); i++){
+    		g.setColor(Line_c.get(i));
+    		g.drawLine(Line_p1.get(i).x, Line_p1.get(i).y, Line_p2.get(i).x, Line_p2.get(i).y);
+    		repaint();  
+        }
 	
 		// Paint function for FREEHAND
 		for(int i = 0; i < a_p.size()-1; i++){
@@ -463,7 +464,7 @@ class PanelPaint extends JPanel{
 		for(int i = 0; i < a_p_rubber.size()-1; i++){
 			Graphics2D g2d = (Graphics2D) g.create();
 					
-			g2d.setColor(a_c_rubber.get(i));
+			g2d.setColor(Color.white);
 			g2d.setStroke(new BasicStroke(10));
 					
 			if(a_i_rubber.get(i) == a_i_rubber.get(i+1))
