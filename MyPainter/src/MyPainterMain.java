@@ -1,9 +1,14 @@
+import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Graphics2D;
 import java.awt.Point;
 
 import javax.swing.BorderFactory;
 import java.awt.Graphics;
+
+import javax.swing.Icon;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
@@ -54,6 +59,7 @@ public class MyPainterMain {
 	static int currentY;
 	static int initialX;
 	static int initialY;
+	static String tool ="Draw";
 	
 	/**
 	 * @param args
@@ -78,67 +84,50 @@ public class MyPainterMain {
         
         panelCanvas.setBounds(108,45,660,480);
 
+        ActionListener toolListener = new ActionListener() {
+	          public void actionPerformed(ActionEvent e){
+	        	  tool= ((JButton)e.getSource()).getName();
+	        	  System.out.println(tool);
+	          }
+	          };
         
         //buttons for tools
-        buttonFreehand = new JButton();
+	    Icon freehandIcon = new ImageIcon("paint_images/curvedline.png");
+	    Icon lineIcon = new ImageIcon("paint_images/straightline.gif");
+	    Icon squareIcon = new ImageIcon("paint_images/square.png");
+	    Icon circleIcon = new ImageIcon("paint_images/circle.png");
+	    Icon rubberIcon = new ImageIcon("paint_images/rubber.png");
+	    Icon penIcon = new ImageIcon("paint_images/pen.jpg");
+	    
+        buttonFreehand = new JButton(freehandIcon);
+        buttonFreehand.setName("Draw");
         buttonFreehand.setBounds(15,45,34,34);
+        buttonFreehand.addActionListener(toolListener);
         
-        buttonFreehand.addActionListener(new ActionListener() {
-	          public void actionPerformed(ActionEvent e){
-	        	  
-	    			//open the first screen	
-	          }
-	          });
-        
-        buttonLine = new JButton();
+        buttonLine = new JButton(lineIcon);
+        buttonLine.setName("Line");
         buttonLine.setBounds(49,45,34,34);
+        buttonLine.addActionListener(toolListener);
         
-        buttonLine.addActionListener(new ActionListener() {
-	          public void actionPerformed(ActionEvent e){
-	        	  
-	    			//open the first screen	
-	          }
-	          });
-        
-        buttonSquare = new JButton();
+        buttonSquare = new JButton(squareIcon);
+        buttonSquare.setName("Square");
         buttonSquare.setBounds(15,79,34,34);
+        buttonSquare.addActionListener(toolListener);
         
-        buttonSquare.addActionListener(new ActionListener() {
-	          public void actionPerformed(ActionEvent e){
-	        	  
-	    			//open the first screen	
-	          }
-	          });
-        
-        buttonCircle = new JButton();
+        buttonCircle = new JButton(circleIcon);
+        buttonCircle.setName("Circle");
         buttonCircle.setBounds(49,79,34,34);
+        buttonCircle.addActionListener(toolListener);
         
-        buttonCircle.addActionListener(new ActionListener() {
-	          public void actionPerformed(ActionEvent e){
-	        	  
-	    			//open the first screen	
-	          }
-	          });
-        
-        buttonRubber = new JButton();
+        buttonRubber = new JButton(rubberIcon);
+        buttonRubber.setName("Rubber");
         buttonRubber.setBounds(15,113,34,34);
+        buttonRubber.addActionListener(toolListener);
         
-        buttonRubber.addActionListener(new ActionListener() {
-	          public void actionPerformed(ActionEvent e){
-	        	  
-	    			//open the first screen	
-	          }
-	          });
-        
-        buttonPen = new JButton();
+        buttonPen = new JButton(penIcon);
+        buttonPen.setName("Pen");
         buttonPen.setBounds(49,113,34,34);
-        
-        buttonPen.addActionListener(new ActionListener() {
-	          public void actionPerformed(ActionEvent e){
-	        	  
-	    			//open the first screen	
-	          }
-	          });
+        buttonPen.addActionListener(toolListener);
         
         ActionListener colourListener = new ActionListener() {
 	          public void actionPerformed(ActionEvent e){
@@ -245,8 +234,8 @@ public class MyPainterMain {
 	        edit = new JMenu("Edit");
 	        help = new JMenu("Help");
 	        
-	        saveAction = new JMenuItem("Save Game");
-	        loadAction = new JMenuItem("Load Game");
+	        saveAction = new JMenuItem("Save");
+	        loadAction = new JMenuItem("Load");
 	        exitAction = new JMenuItem("Exit");
 	        UndoAction = new JMenuItem("Undo");
 	        FAQAction = new JMenuItem("FAQ");
@@ -274,8 +263,25 @@ class PanelPaint extends JPanel{
 	ArrayList<Color> a_c = new ArrayList<Color>();
 	ArrayList<Integer> a_i = new ArrayList<Integer>();
 	
+	ArrayList<Point> a_p_pen = new ArrayList<Point>();
+	ArrayList<Color> a_c_pen = new ArrayList<Color>();
+	ArrayList<Integer> a_i_pen = new ArrayList<Integer>();
+	
+	ArrayList<Point> a_p_rubber = new ArrayList<Point>();
+	ArrayList<Color> a_c_rubber = new ArrayList<Color>();
+	ArrayList<Integer> a_i_rubber = new ArrayList<Integer>();
+	
+	ArrayList<Point> Line_p1 = new ArrayList<Point>();
+	ArrayList<Point> Line_p2 = new ArrayList<Point>();
+	
+	
 	boolean is_clicked = false;
 	int id_click = -1;
+	int initialX;
+	int initialY;
+	int tempX;
+	int tempY;
+	int id_click_line = 0;
 	
 	public PanelPaint(){
 		setBorder(BorderFactory.createLineBorder(Color.black));
@@ -285,16 +291,42 @@ class PanelPaint extends JPanel{
 		addMouseMotionListener(new MouseMotionListener() {
             public void mouseDragged(MouseEvent event) {
             	
-            	if(is_clicked)	
-            	{
-            		repaint();
-            		a_p.add(new Point(event.getX(), event.getY()));
-            		a_c.add(MyPainterMain.g_color);
-            		a_i.add(id_click);
-            		repaint();
-            	}
+            	if(MyPainterMain.tool.equals("Draw")){
+	            	if(is_clicked)	
+	            	{
+	            		repaint();
+	            		a_p.add(new Point(event.getX(), event.getY()));
+	            		a_c.add(MyPainterMain.g_color);
+	            		a_i.add(id_click);
+	            		repaint();
+	            	}
 
-               
+            	}
+            	
+            	if(MyPainterMain.tool.equals("Pen")){
+	            	if(is_clicked)	
+	            	{
+	            		repaint();
+	            		a_p_pen.add(new Point(event.getX(), event.getY()));
+	            		a_c_pen.add(MyPainterMain.g_color);
+	            		a_i_pen.add(id_click);
+	            		repaint();
+	            	}
+
+            	}
+            	
+            	if(MyPainterMain.tool.equals("Rubber")){
+	            	if(is_clicked)	
+	            	{
+	            		repaint();
+	            		a_p_rubber.add(new Point(event.getX(), event.getY()));
+	            		a_c_rubber.add(Color.white);
+	            		a_i_rubber.add(id_click);
+	            		repaint();
+	            	}
+
+            	}
+            	
             }
 
 
@@ -311,29 +343,64 @@ class PanelPaint extends JPanel{
         public void mousePressed(MouseEvent event) {
         	
         	repaint();
-        	id_click++;
+        	
         	is_clicked = true;
-        	a_p.add(new Point(event.getX(), event.getY()));
-    		a_c.add(MyPainterMain.g_color);
-    		a_i.add(id_click);
-    		repaint();
+        	
+        	id_click++;
+        	
+        	if(MyPainterMain.tool.equals("Line")){
+        		
+        		if(id_click_line%2 == 0){
+        			Line_p1.add(new Point(event.getX(), event.getY()));
+        		}
+        		
+        		if(id_click_line%2 == 1){
+        			Line_p2.add(new Point(event.getX(), event.getY()));
+        		}
+        		
+        		id_click_line ++;
+	        	
+        	}
+        	
+        	if(MyPainterMain.tool.equals("Draw")){
+        		
+	        	a_p.add(new Point(event.getX(), event.getY()));
+	    		a_c.add(MyPainterMain.g_color);
+	    		a_i.add(id_click);
+	    		repaint();
+        	}
+        	
+        	if(MyPainterMain.tool.equals("Pen")){
+        		
+	        	a_p_pen.add(new Point(event.getX(), event.getY()));
+	    		a_c_pen.add(MyPainterMain.g_color);
+	    		a_i_pen.add(id_click);
+	    		repaint();
+        	}
+        	
+        	if(MyPainterMain.tool.equals("Rubber")){
+        		
+	        	a_p_rubber.add(new Point(event.getX(), event.getY()));
+	    		a_c_rubber.add(MyPainterMain.g_color);
+	    		a_i_rubber.add(id_click);
+	    		repaint();
+        	}
+
         }
         public void mouseReleased(MouseEvent event) {
-
         	is_clicked = false;
         }
 		@Override
 		public void mouseClicked(MouseEvent event) {
-			/*// TODO Auto-generated method stub
-        	initialX = event.getX();
-        	initialY = event.getY();
-            System.out.println("initialX: " + initialX + " ,initialY: "+ initialY);*/
-			
+			// TODO Auto-generated method stub
+
 		}
 		@Override
-		public void mouseEntered(MouseEvent arg0) {
+		public void mouseEntered(MouseEvent event) {
 			// TODO Auto-generated method stub
-			
+			//tempX=event.getX();
+			//tempY=event.getY();
+			//repaint();
 		}
 		@Override
 		public void mouseExited(MouseEvent arg0) {
@@ -351,23 +418,61 @@ class PanelPaint extends JPanel{
     
 	public void paintComponent(Graphics g) {
         super.paintComponent(g);
-        
+    
+		// Paint function for POINT
         if(!a_p.isEmpty())
         {
         	g.setColor(a_c.get(0));
         	g.drawLine(a_p.get(0).x, a_p.get(0).y, a_p.get(0).x, a_p.get(0).y);
         }
         
+		// Paint function for LINE
+       if(id_click_line>1){
+    	   for(int i = 0; i < Line_p1.size(); i++)
+    	   g.drawLine(Line_p1.get(i).x, Line_p1.get(i).y, Line_p2.get(i).x, Line_p2.get(i).y);
+    	   repaint();
+           
+       }
+	
+		// Paint function for FREEHAND
 		for(int i = 0; i < a_p.size()-1; i++){
 			g.setColor(a_c.get(i));
-			
+				
 			if(a_i.get(i) == a_i.get(i+1))
 				g.drawLine(a_p.get(i).x, a_p.get(i).y, a_p.get(i+1).x, a_p.get(i+1).y);
 			else
 				g.drawLine(a_p.get(i).x, a_p.get(i).y, a_p.get(i).x, a_p.get(i).y);
 			
-		}
-
+			}
+		
+		// Paint function for PEN
+		for(int i = 0; i < a_p_pen.size()-1; i++){
+			Graphics2D g2d = (Graphics2D) g.create();
+			
+			g2d.setColor(a_c_pen.get(i));
+			g2d.setStroke(new BasicStroke(4));
+			
+			if(a_i_pen.get(i) == a_i_pen.get(i+1))
+				g2d.drawLine(a_p_pen.get(i).x, a_p_pen.get(i).y, a_p_pen.get(i+1).x, a_p_pen.get(i+1).y);
+			else
+				g2d.drawLine(a_p_pen.get(i).x, a_p_pen.get(i).y, a_p_pen.get(i).x, a_p_pen.get(i).y);
+			
+			}
+		
+		// Paint function for RUBBER
+		for(int i = 0; i < a_p_rubber.size()-1; i++){
+			Graphics2D g2d = (Graphics2D) g.create();
+					
+			g2d.setColor(a_c_rubber.get(i));
+			g2d.setStroke(new BasicStroke(10));
+					
+			if(a_i_rubber.get(i) == a_i_rubber.get(i+1))
+				g2d.drawLine(a_p_rubber.get(i).x, a_p_rubber.get(i).y, a_p_rubber.get(i+1).x, a_p_rubber.get(i+1).y);
+			else
+				g2d.drawLine(a_p_rubber.get(i).x, a_p_rubber.get(i).y, a_p_rubber.get(i).x, a_p_rubber.get(i).y);
+					
+			}
+        	
     } 
 
        
