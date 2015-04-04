@@ -4,6 +4,7 @@ import java.awt.Dimension;
 import java.awt.Graphics2D;
 import java.awt.Point;
 
+import javax.imageio.ImageIO;
 import javax.swing.BorderFactory;
 import java.awt.Graphics;
 
@@ -22,6 +23,10 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
+import java.awt.image.BufferedImage;
+import java.awt.image.RenderedImage;
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 
 
@@ -63,7 +68,7 @@ public class MyPainterMain {
 	static int initialX;
 	static int initialY;
 	static String tool ="Draw";
-	static boolean isFilled = true;
+	static boolean isFilled = false;
 	
 	/**
 	 * @param args
@@ -252,6 +257,21 @@ public class MyPainterMain {
 	        help = new JMenu("Help");
 	        
 	        saveAction = new JMenuItem("Save");
+	        saveAction.addActionListener(new ActionListener() {
+	            public void actionPerformed(ActionEvent e) {
+	            	
+	            	System.out.println("Saving");
+	            	try {
+						ImageIO.write(MyPainterMain.createImage(panelCanvas), "PNG", new File("image.png"));
+					} catch (IOException e1) {
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
+					}
+	            	System.out.println("Saved");
+	            	
+	            }
+	        });
+	        
 	        loadAction = new JMenuItem("Load");
 	        exitAction = new JMenuItem("Exit");
 	        UndoAction = new JMenuItem("Undo");
@@ -269,6 +289,16 @@ public class MyPainterMain {
 	        
 	        frameMain.setJMenuBar(menuBar);
 	    
+	}
+	
+	static public RenderedImage createImage(JPanel panel) {
+
+	    int w = panel.getWidth();
+	    int h = panel.getHeight();
+	    BufferedImage bi = new BufferedImage(w, h, BufferedImage.TYPE_INT_RGB);
+	    Graphics2D g = bi.createGraphics();
+	    panel.paint(g);
+	    return bi;
 	}
 	
 }
