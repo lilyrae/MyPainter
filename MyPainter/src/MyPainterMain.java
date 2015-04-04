@@ -10,6 +10,7 @@ import java.awt.Graphics;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
@@ -44,6 +45,8 @@ public class MyPainterMain {
 	static JButton buttonPink;
 	static JButton buttonOrange;
 	static JButton buttonGrey;
+	static JCheckBox checkboxFill;
+    
 	//menubar
     static JMenu file;
     static JMenu edit;
@@ -60,6 +63,7 @@ public class MyPainterMain {
 	static int initialX;
 	static int initialY;
 	static String tool ="Draw";
+	static boolean isFilled = true;
 	
 	/**
 	 * @param args
@@ -83,15 +87,17 @@ public class MyPainterMain {
         panelCanvas = new PanelPaint();
         
         panelCanvas.setBounds(108,45,660,480);
-
+        
+        
+        //buttons for tools
         ActionListener toolListener = new ActionListener() {
 	          public void actionPerformed(ActionEvent e){
 	        	  tool= ((JButton)e.getSource()).getName();
 	        	  System.out.println(tool);
 	          }
 	          };
-        
-        //buttons for tools
+	          
+        //icons for buttons
 	    Icon freehandIcon = new ImageIcon("paint_images/curvedline.png");
 	    Icon lineIcon = new ImageIcon("paint_images/straightline.gif");
 	    Icon squareIcon = new ImageIcon("paint_images/square.png");
@@ -197,6 +203,16 @@ public class MyPainterMain {
         buttonGrey.setBorder(BorderFactory.createLineBorder(Color.black));
         buttonGrey.addActionListener(colourListener);
         
+        //checkbox for filled shapes
+        checkboxFill = new JCheckBox("Fill");
+        checkboxFill.setBounds(85,90, 20, 20);
+        checkboxFill.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent event) {
+            	isFilled = checkboxFill.isSelected();
+            }
+        });
+        
         setupMenuBar();
         
         panelCanvas.setVisible(true);
@@ -218,6 +234,7 @@ public class MyPainterMain {
         frameMain.add(buttonPink);
         frameMain.add(buttonOrange);
         frameMain.add(buttonGrey);
+        frameMain.add(checkboxFill);
         
         frameMain.setSize(800, 600);
 	    frameMain.setLayout(null);
@@ -274,13 +291,16 @@ class PanelPaint extends JPanel{
 	ArrayList<Point> Line_p2 = new ArrayList<Point>();
 	ArrayList<Color> Line_c = new ArrayList<Color>();
 	
+	ArrayList<Point> Square_p1 = new ArrayList<Point>();
+	ArrayList<Point> Square_p2 = new ArrayList<Point>();
+	ArrayList<Color> Square_c = new ArrayList<Color>();
+	
+	ArrayList<Point> Circle_p1 = new ArrayList<Point>();
+	ArrayList<Point> Circle_p2 = new ArrayList<Point>();
+	ArrayList<Color> Circle_c = new ArrayList<Color>();
 	
 	boolean is_clicked = false;
 	int id_click = -1;
-	int initialX;
-	int initialY;
-	int tempX;
-	int tempY;
 	
 	public PanelPaint(){
 		setBorder(BorderFactory.createLineBorder(Color.black));
@@ -305,6 +325,24 @@ class PanelPaint extends JPanel{
 	            	if(is_clicked){
 	            		repaint();
 	            		Line_p2.set(Line_p2.size()-1, new Point(event.getX(), event.getY()));
+	            		repaint();
+	            	}
+
+            	}
+            	
+            	if(MyPainterMain.tool.equals("Square")){
+	            	if(is_clicked){
+	            		repaint();
+	            		Square_p2.set(Square_p2.size()-1, new Point(event.getX(), event.getY()));
+	            		repaint();
+	            	}
+
+            	}
+            	
+            	if(MyPainterMain.tool.equals("Circle")){
+	            	if(is_clicked){
+	            		repaint();
+	            		Circle_p2.set(Circle_p2.size()-1, new Point(event.getX(), event.getY()));
 	            		repaint();
 	            	}
 
@@ -362,6 +400,22 @@ class PanelPaint extends JPanel{
 	        	
         	}
         	
+        	if(MyPainterMain.tool.equals("Square")){
+    			
+        		Square_p1.add(new Point(event.getX(), event.getY()));
+        		Square_p2.add(new Point(event.getX(), event.getY()));
+        		Square_c.add(MyPainterMain.g_color);
+	        	
+        	}
+        	
+        	if(MyPainterMain.tool.equals("Circle")){
+    			
+        		Circle_p1.add(new Point(event.getX(), event.getY()));
+        		Circle_p2.add(new Point(event.getX(), event.getY()));
+        		Circle_c.add(MyPainterMain.g_color);
+	        	
+        	}
+        	
         	if(MyPainterMain.tool.equals("Draw")){
         		
 	        	a_p.add(new Point(event.getX(), event.getY()));
@@ -391,6 +445,12 @@ class PanelPaint extends JPanel{
         	
         	if(MyPainterMain.tool.equals("Line"))
         		Line_p2.set(Line_p2.size()-1, new Point(event.getX(), event.getY()));
+        	
+        	if(MyPainterMain.tool.equals("Square"))
+        		Square_p2.set(Square_p2.size()-1, new Point(event.getX(), event.getY()));
+        	
+        	if(MyPainterMain.tool.equals("Circle"))
+        		Circle_p2.set(Circle_p2.size()-1, new Point(event.getX(), event.getY()));
         }
 		@Override
 		public void mouseClicked(MouseEvent event) {
@@ -432,6 +492,30 @@ class PanelPaint extends JPanel{
     	for(int i = 0; i < Line_p2.size(); i++){
     		g.setColor(Line_c.get(i));
     		g.drawLine(Line_p1.get(i).x, Line_p1.get(i).y, Line_p2.get(i).x, Line_p2.get(i).y);
+    		repaint();  
+        }
+    	
+    	// Paint function for SQUARE
+    	for(int i = 0; i < Square_p2.size(); i++){
+    		g.setColor(Square_c.get(i));
+    		
+    		if(MyPainterMain.isFilled)
+    			g.fillRect(Square_p1.get(i).x, Square_p1.get(i).y, (Square_p2.get(i).x - Square_p1.get(i).x), (Square_p2.get(i).y - Square_p1.get(i).y));
+    		else
+    			g.drawRect(Square_p1.get(i).x, Square_p1.get(i).y, (Square_p2.get(i).x - Square_p1.get(i).x), (Square_p2.get(i).y - Square_p1.get(i).y));
+    		
+    		repaint();  
+        }
+    	
+    	// Paint function for CIRCLE
+    	for(int i = 0; i < Circle_p2.size(); i++){
+    		g.setColor(Circle_c.get(i));
+    		
+    		if(MyPainterMain.isFilled)
+    			g.fillOval(Circle_p1.get(i).x, Circle_p1.get(i).y, (Circle_p2.get(i).x - Circle_p1.get(i).x), (Circle_p2.get(i).y - Circle_p1.get(i).y));
+    		else
+    			g.drawOval(Circle_p1.get(i).x, Circle_p1.get(i).y, (Circle_p2.get(i).x - Circle_p1.get(i).x), (Circle_p2.get(i).y - Circle_p1.get(i).y));
+    		
     		repaint();  
         }
 	
