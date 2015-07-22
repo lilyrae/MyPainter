@@ -1,4 +1,4 @@
 MyPainter
 =========
 
-paint
+Java implementation of Paint.
